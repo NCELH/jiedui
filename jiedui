@@ -1,0 +1,315 @@
+//ѧ���ɼ�����ϵͳC����
+/*ͷ�ļ�*/
+#include <stdio.h>
+#include<dos.h>
+#include<stdlib.h> /*����˵��*/
+#include<string.h> /*�ַ�������*/
+#include<mem.h> /*�ڴ��������*/
+#include<ctype.h> /*�ַ���������*/
+#include<alloc.h> /*��̬��ַ���亯��*/
+#define LEN sizeof(STUDENT)
+typedef struct stu /*����ṹ���������ڻ�������*/
+{
+	char num[6];
+	char name[5];
+	int score[3];
+	int sum;
+	float average;
+	int order;
+	struct stu *next;
+}STUDENT;
+/*����ԭ��*/
+STUDENT *init(); /*��ʼ������*/
+int menu_select(); /*�˵�����*/
+STUDENT *create(); /*��������*/
+void print(STUDENT *head); /* ��ʾȫ����¼*/
+void search(STUDENT *head); /*���Ҽ�¼*/
+STUDENT *delete(STUDENT *head); /*ɾ����¼*/
+STUDENT *sort(STUDENT *head); /*����*/
+STUDENT *insert(STUDENT *head,STUDENT *newnode); /*�����¼*/
+void save(STUDENT *head); /*�����ļ�*/
+STUDENT *load(); /*���ļ�*/
+/*����������*/
+main()
+{
+	STUDENT *head,newnode;
+	head=init(); /*������ʼ��,ʹhead��ֵΪNULL*/
+	for(;;) /*ѭ�����޴�*/
+	{
+		switch(menu_select())
+		{
+			case 1:head=create();break;
+			case 2:print(head);break;
+			case 3:search(head);break;
+			case 4:head=delete(head);break;
+			case 5:head=sort(head);break;
+			case 6:head=insert(head,&newnode);break; /*&newnode��ʾ���ص�ַ*/
+			case 7:save(head);break;
+			case 8:head=load(); break;
+			case 9:exit(0); /*��˵�����ֵΪ9��������*/
+		}
+	}
+}
+/*��ʼ������*/
+STUDENT *init()
+{
+	return NULL; /*���ؿ�ָ��*/
+}
+/*�˵�ѡ����*/
+menu_select()
+{
+int n;
+struct date d; /*����ʱ��ṹ��*/
+getdate(&d); /*��ȡϵͳ���ڲ������ŵ��ṹ��d��*/
+printf("press any key to enter the menu......"); /*����һ���������˵�*/
+getch(); /*�Ӽ��̶�ȡһ���ַ�,������ʾ����Ļ*/
+clrscr(); /*����*/
+printf("********************************************************************************\n");
+printf("\t\t Welcome to\n");
+printf("\n\t\t The student score manage system\n");
+printf("*************************************MENU***************************************\n");
+printf("\t\t\t1. Enter the record\n"); /*����ѧ���ɼ���¼*/
+printf("\t\t\t2. Print the record\n"); /*��ʾ*/
+printf("\t\t\t3. Search record on name\n"); /*Ѱ��*/
+printf("\t\t\t4. Delete a record\n"); /*ɾ��*/
+printf("\t\t\t5. Sort to make new a file\n"); /*����*/
+printf("\t\t\t6. Insert record to list\n"); /*����*/
+printf("\t\t\t7. Save the file\n"); /*����*/
+printf("\t\t\t8. Load the file\n"); /*��ȡ*/
+printf("\t\t\t9. Quit\n"); /*�˳�*/
+printf("\n\t\t Made by Hu Haihong.\n");
+printf("********************************************************************************\n");
+printf("\t\t\t\t%d\\%d\\%d\n",d.da_year,d.da_mon,d.da_day); /*��ʾ��ǰϵͳ����*/
+do{
+ printf("\n\t\t\tEnter your choice(1~9):");
+ scanf("%d",&n);
+ }while(n<1||n>9); /*���ѡ�����1~9֮��������*/
+ return(n); /*����ѡ������������ݸ���������Ӧ�ĺ���*/
+}
+/*���뺯��*/
+STUDENT *create()
+{
+int i,s;
+STUDENT *head=NULL,*p; /* ���庯��.�˺�������һ��ָ������ͷ��ָ��*/
+clrscr();
+for(;;)
+ {p=(STUDENT *)malloc(LEN); /*����һ���µĵ�Ԫ*/
+ if(!p) /*���ָ��pΪ��*/
+ {printf("\nOut of memory."); /*����ڴ����*/
+ return (head); /*����ͷָ��,��ͬ*/
+ }
+ printf("Enter the num(0:list end):");
+ scanf("%s",p->num);
+ if(p->num[0]=='0') break; /*���ѧ�����ַ�Ϊ0���������*/
+ printf("Enter the name:");
+ scanf("%s",p->name);
+ printf("Please enter the %d scores\n",3); /*��ʾ��ʼ����ɼ�*/
+ s=0; /*����ÿ��ѧ�����ܷ֣���ֵΪ0*/
+ for(i=0;i<3;i++) /*3�ſγ�ѭ��3��*/
+ {
+ do{
+ printf("score%d:",i+1);
+ scanf("%d",&p->score[i]);
+ if(p->score[i]<0 || p->score[i]>100) /*ȷ���ɼ���0~100֮��*/
+ printf("Data error,please enter again.\n");
+ }while(p->score[i]<0 || p->score[i]>100);
+ s=s+p->score[i]; /*�ۼӸ��ųɼ�*/
+ }
+ p->sum=s; /*���ֱܷ���*/
+ p->average=(float)s/3; /*����ǿ������ת����sת����float��,����ƽ��ֵ*/
+ p->order=0; /*δ����ǰ��ֵΪ0*/
+ p->next=head; /*��ͷ�����Ϊ��������ĺ�̽��*/
+ head=p; /*��������Ϊ�µ�ͷ���*/
+ }
+ return(head);
+}
+/* ��ʾȫ����¼����*/
+void print(STUDENT *head)
+{
+int i=0; /* ͳ�Ƽ�¼����*/
+STUDENT *p; /*�ƶ�ָ��*/
+clrscr();
+p=head; /*��ֵΪͷָ��*/
+printf("\n************************************STUDENT************************************\n");
+printf("-------------------------------------------------------------------------------\n");
+printf("| Rec | Num | Name | Sc1 | Sc2 | Sc3 | Sum | Ave | Order |\n");
+printf("-------------------------------------------------------------------------------\n");
+while(p!=NULL)
+ {
+ i++;
+ printf("| %3d | %4s | %-4s | %3d | %3d | %3d | %3d | %4.2f | %-5d|\n",
+ i, p->num,p->name,p->score[0],p->score[1],p->score[2],p->sum,p->average,p->order);
+ p=p->next;
+ }
+printf("-------------------------------------------------------------------------------\n");
+printf("**************************************END**************************************\n");
+}
+/*���Ҽ�¼����*/
+void search(STUDENT *head)
+{
+STUDENT *p; /* �ƶ�ָ��*/
+char s[5]; /*��������õ��ַ�����*/
+clrscr();
+printf("Please enter name for searching.\n");
+scanf("%s",s);
+p=head; /*��ͷָ�븳��p*/
+while(strcmp(p->name,s) && p != NULL) /*����¼����������Ҫ�ҵģ���ָ�벻Ϊ��ʱ*/
+ p=p->next; /*�ƶ�ָ�룬ָ����һ���*/
+ if(p!=NULL) /*���ָ�벻Ϊ��*/
+ {printf("\n*************************************FOUND************************************\n");
+ printf("-------------------------------------------------------------------------------\n");
+ printf("| Num | Name | sc1 | sc2 | sc3 | Sum | Ave | Order |\n");
+ printf("-------------------------------------------------------------------------------\n");
+ printf("| %4s | %4s | %3d | %3d | %3d | %3d | %4.2f | %-5d|\n",
+ p->num,p->name,p->score[0],p->score[1],p->score[2],p->sum,p->average,p->order);
+ printf("-------------------------------------------------------------------------------\n");
+ printf("***************************************END**************************************\n");
+ }
+ else
+ printf("\nThere is no num %s student on the list.\n",s); /*��ʾû�и�ѧ��*/
+}
+/*ɾ����¼����*/
+STUDENT *delete(STUDENT *head)
+{int n;
+STUDENT *p1,*p2; /*p1Ϊ���ҵ�Ҫɾ���Ľ��ָ�룬p2Ϊ��ǰ��ָ��*/
+char c,s[6]; /*s[6]�������ѧ��,c����������ĸ*/
+clrscr();
+printf("Please enter the deleted num: ");
+scanf("%s",s);
+p1=p2=head; /*��p1��p2����ֵͷָ��*/
+while(strcmp(p1->num,s) && p1 != NULL) /*����¼��ѧ�Ų���Ҫ�ҵģ���ָ�벻Ϊ��ʱ*/
+ {p2=p1; /*��p1ָ��ֵ����p2��Ϊp1��ǰ��ָ��*/
+ p1=p1->next; /*��p1ָ��ָ����һ����¼*/
+ }
+if(strcmp(p1->num,s)==0) /*ѧ���ҵ���*/
+ {printf("**************************************FOUND************************************\n");
+ printf("-------------------------------------------------------------------------------\n");
+ printf("| Num | Name | sc1 | sc2 | sc3 | Sum | Ave | Order |\n");
+ printf("-------------------------------------------------------------------------------\n");
+ printf("| %4s | %4s | %3d | %3d | %3d | %3d | %4.2f | %-5d|\n",
+ p1->num,p1->name,p1->score[0],p1->score[1],p1->score[2],p1->sum,p1->average,p1->order);
+ printf("-------------------------------------------------------------------------------\n");
+ printf("***************************************END**************************************\n");
+ printf("Are you sure to delete the student Y/N ?"); /*��ʾ�Ƿ�Ҫɾ��,����Yɾ��,N���˳�*/
+ for(;;)
+ {scanf("%c",&c);
+ if(c=='n'||c=='N') break; /*�����ɾ��,��������ѭ��*/
+ if(c=='y'||c=='Y')
+ {
+ if(p1==head) /*��p1==head��˵����ɾ������׽��*/
+ head=p1->next; /*�ѵڶ�������ַ����head*/
+ else
+ p2->next=p1->next; /*����һ�½���ַ����ǰһ����ַ*/
+ n=n-1;
+ printf("\nNum %s student have been deleted.\n",s);
+ printf("Don't forget to save.\n");break; /*ɾ���������ѭ��*/
+ }
+ }
+ }
+ else
+ printf("\nThere is no num %s student on the list.\n",s); /*�Ҳ����ý��*/
+return(head);
+}
+/*������*/
+STUDENT *sort(STUDENT *head)
+{int i=0; /*��������*/
+STUDENT *p1,*p2,*t,*temp; /*������ʱָ��*/
+temp=head->next; /*��ԭ����ͷָ����ָ����һ�������ͷָ��*/
+head->next=NULL; /*��һ�����Ϊ�±���ͷ���*/
+while(temp!=NULL) /*��ԭ����Ϊ��ʱ����������*/
+ {
+ t=temp; /*ȡԭ����ͷ���*/
+ temp=temp->next; /*ԭ��ͷ���ָ�����*/
+ p1=head; /*�趨�ƶ�ָ��p1����ͷָ�뿪ʼ*/
+ p2=head; /*�趨�ƶ�ָ��p2��Ϊp1��ǰ������ֵΪͷָ��*/
+ while(t->average<p1->average&&p1!=NULL) /*���ɼ�ƽ���ֱȽ�*/
+ {
+ p2=p1; /*�������ֵС�����±�ָ�����*/
+ p1=p1->next;
+ }
+ if(p1==p2) /*p1==p2��˵���������ֵ��Ӧ������λ*/
+ {
+ t->next=p1; /*�������ĺ��Ϊp*/
+ head=t; /*��ͷ���Ϊ�������*/
+ }
+ else /*�������Ӧ�������м�ĳ��λ��p2��p1֮�䣬��pΪ������β��*/
+ {
+ t->next=p1; /*t�ĺ����p1*/
+ p2->next=t; /*p2�ĺ����t*/
+ }
+ }
+p1=head; /*���ź����ͷָ�븳��p1��׼����д����*/
+while(p1!=NULL) /*��p1��Ϊ��ʱ���������в���*/
+ {
+ i++; /*������*/
+ p1->order=i; /*�������Ÿ�ֵ������*/
+ p1=p1->next; /*ָ�����*/
+ }
+printf("Sorting is sucessful.\n"); /*����ɹ�*/
+return (head);
+}
+/*�����¼����*/
+STUDENT *insert(STUDENT *head,STUDENT *newnode)
+{STUDENT *p0,*p1,*p2;
+int n,sum1,i;
+p1=head; /*ʹp1ָ���һ�����*/
+p0=newnode; /*p0ָ��Ҫ����Ľ��*/
+printf("\nPlease enter a newnode record.\n"); /*��ʾ�����¼��Ϣ*/
+printf("Enter the num:");
+scanf("%s",newnode->num);
+printf("Enter the name:");
+scanf("%s",newnode->name);
+printf("Please enter the %d scores.\n",3);
+sum1=0; /*�����¼�¼���ܷ֣���ֵΪ0*/
+for(i=0;i<3;i++)
+ {
+ do{
+ printf("score%d:",i+1);
+ scanf("%d",&newnode->score[i]);
+ if(newnode->score[i]>100||newnode->score[i]<0)
+ printf("Data error,please enter again.\n");
+ }while(newnode->score[i]>100||newnode->score[i]<0);
+ sum1=sum1+newnode->score[i]; /*�ۼӸ��ųɼ�*/
+ }
+newnode->sum=sum1; /*���ִܷ����¼�¼��*/
+newnode->average=(float)sum1/3;
+newnode->order=0;
+if(head==NULL) /*ԭ���������ǿձ�*/
+ {head=p0;p0->next=NULL;} /*ʹp0ָ��Ľ����Ϊͷ���*/
+else
+ {while((p0->average<p1->average)&&(p1->next!=NULL))
+ {p2=p1; /*ʹp2ָ��ղ�p1ָ��Ľ��*/
+ p1=p1->next; /*p1����һ�����*/
+ }
+ if(p0->average>=p1->average)
+ {if(head==p1)head=p0; /*�嵽ԭ����һ�����֮ǰ*/
+ else p2->next=p0; /*�嵽p2ָ��Ľ��֮��*/
+ p0->next=p1;}
+ else
+ {p1->next=p0;p0->next=NULL;} /*�嵽���Ľ��֮��*/
+ }
+n=n+1; /*�������1*/
+head=sort(head); /*��������ĺ���,��ѧ���ɼ���������*/
+printf("\nStudent %s have been inserted.\n",newnode->name);
+printf("Don't forget to save the newnode file.\n");
+return(head);
+}
+/*�������ݵ��ļ�����*/
+void save(STUDENT *head)
+{FILE *fp; /*����ָ���ļ���ָ��*/
+STUDENT *p; /* �����ƶ�ָ��*/
+char outfile[10];
+printf("Enter outfile name,for example c:\\score\n");
+scanf("%s",outfile);
+if((fp=fopen(outfile,"wb"))==NULL) /*Ϊ�����һ���������ļ�,Ϊֻд��ʽ*/
+ {
+ printf("Cannot open the file\n");
+ return; /*���򲻿��򷵻ز˵�*/
+ }
+printf("\nSaving the file......\n");
+p=head; /*�ƶ�ָ���ͷָ�뿪ʼ*/
+while(p!=NULL) /*��p��Ϊ��*/
+ {
+ fwrite(p,LEN,1,fp); /*д��һ����¼*/
+ p=p->next; /*ָ�����*/
+ }
